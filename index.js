@@ -1,28 +1,30 @@
-const PORT = 8000 
-const axios = require('axios')
-const cheerio = require('cheerio')
-const express = require('express')
+const puppeteer = require('puppeteer');
 
-const app = express()
+(async () => {
+  // Launch the browser
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
 
-const url = 'https://www.theguardian.com/uk'
+  // Navigate to the target webpage
+  await page.goto('https://www.theguardian.com/world/2024/mar/24/new-islamic-state-videos-back-claim-it-carried-out-moscow-concert-hall-attack');
 
-axios(url)
-    .then(response => {
-        const html = response.data
-        const $ = cheerio.load(html)
-        const articles = []
+  // Scrape the title and article text
+  const articleData = await page.evaluate(() => {
+    const articleTitle = document.querySelector('h1').innerText;
+    const articleText = Array.from(document.querySelectorAll('article p')).map(p => p.innerText).join('\n');
 
-        $('.dcr-1nyap28', html).each(function(){
-            const title = $(this).text()
-            articles.push({
-                title
-            })
+    return {
+      title: articleTitle,
+      text: articleText
+    };
+  });
 
-        })
-        console.log(articles)
-    }).catch(err => console.log(err))
+  // Define a list to hold your scraped data and append the article data to it
+  let dataList = [];
+  dataList.push(articleData);
 
+  console.log(dataList);
 
-
-app.listen(PORT, () => console.log(`server running on PORT ${PORT}`))
+  // Close the browser
+  await browser.close();
+})();
