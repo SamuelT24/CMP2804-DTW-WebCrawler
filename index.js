@@ -74,10 +74,10 @@ async function searchGoogle(query) {
       const text = Array.from(document.querySelectorAll('article p')).map(p => p.innerText).join('\n');
       return text;
     });
-    let normalisedarticle = normaliseText(seedText);
+    let normalisedarticle = normaliseText(articleData);
     let articleTFIDFVector = applyTFIDFTransformation(seedTFIDF, normalisedarticle);
     console.log('TF-IDF Vector for URL ${URL}:', articleTFIDFVector);
   }
 
-  await browser(close)
+  await browser.close();
 })();
