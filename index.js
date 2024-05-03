@@ -54,18 +54,19 @@ async function searchGoogle(query) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  //example: get seed article from specific url
-  await page.goto('https://www.bbc.co.uk/news/uk-wales-68920517')
-  const seedArticleData = await page.evaulate(() => {
-    const text = document.querySelector('article').innerText;
-    return text;
-  });
+  const seedArticle = 'https://www.bbc.co.uk/news/uk-wales-68920517'
 
-  const normalisedSeedArticle = normaliseText(seedArticleData);
+  //example: get seed article from specific url
+  await page.goto(seedArticle);
+
+  const seedTitle = await page.evaluate(() => document.querySelector('h1').innerText);
+  const seedText = await page.evaluate(() => document.querySelector('article').innerText);
+  
+
+  const normalisedSeedArticle = normaliseText(seedText);
   const seedTFIDF = calculateTFIDF(normalisedSeedArticle);
 
-  const query = 'Newport loan shark';
-  const articleURLs = await searchGoogle(query);
+  const articleURLs = await searchGoogle(seedTitle); //use title of seed article as search query
 
   for (let url of articleURLs){
     await page.goto(url);
@@ -73,7 +74,7 @@ async function searchGoogle(query) {
       const text = Array.from(document.querySelectorAll('article p')).map(p => p.innerText).join('\n');
       return text;
     });
-    let normalisedarticle = normaliseText(articleData);
+    let normalisedarticle = normaliseText(seedText);
     let articleTFIDFVector = applyTFIDFTransformation(seedTFIDF, normalisedarticle);
     console.log('TF-IDF Vector for URL ${URL}:', articleTFIDFVector);
   }
