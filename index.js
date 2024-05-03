@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const natural = require('natural');
 
 // configuration for google search api
 const GOOGLE_API_KEY = 'AIzaSyAKnD34Y-v2GxVvM3WuR6fE8OPL6kqCuds'; //api key here
@@ -78,6 +79,7 @@ async function searchGoogle(query) {
     let articleTFIDFVector = applyTFIDFTransformation(seedTFIDF, normalisedarticle);
     let totalScore = calculateTotalScore(articleTFIDFVector);
     console.log(`Total score for URL ${url}:`, totalScore);
+    sentimentAnalysis(normalisedarticle);
   }
 
   await browser.close();
@@ -89,4 +91,23 @@ function calculateTotalScore(tfidfVector) {
       totalScore += tfidfVector[word];
   }
   return totalScore;
+}
+
+//Sentiment analysis NLP
+function sentimentAnalysis(articleData) {
+  const Analyser = natural.SentimentAnalyzer;
+  const stemmer = natural.PorterStemmer;
+  const analyser = new Analyser("English", stemmer, "afinn");
+
+  const result = analyser.getSentiment(articleData);
+  const humanReadableSentiment = interpretSentiment(result);
+  console.log(`Sentiment for article: ${humanReadableSentiment}`);
+}
+
+function interpretSentiment(score) {
+  if (score > 0.5) return "Strongly Positive";
+  if (score > 0) return "Positive";
+  if (score === 0) return "Neutral";
+  if (score > -0.5) return "Negative";
+  return "Strongly Negative";
 }
