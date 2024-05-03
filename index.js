@@ -76,8 +76,17 @@ async function searchGoogle(query) {
     });
     let normalisedarticle = normaliseText(articleData);
     let articleTFIDFVector = applyTFIDFTransformation(seedTFIDF, normalisedarticle);
-    console.log('TF-IDF Vector for URL ${URL}:', articleTFIDFVector);
+    let totalScore = calculateTotalScore(articleTFIDFVector);
+    console.log(`Total score for URL ${url}:`, totalScore);
   }
 
   await browser.close();
 })();
+
+function calculateTotalScore(tfidfVector) {
+  let totalScore = 0;
+  for (let word in tfidfVector) {
+      totalScore += tfidfVector[word];
+  }
+  return totalScore;
+}
