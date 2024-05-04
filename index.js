@@ -55,7 +55,7 @@ async function searchGoogle(query) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  const seedArticle = 'https://www.bbc.co.uk/news/uk-wales-68920517'
+  const seedArticle = 'https://www.bbc.co.uk/news/entertainment-arts-68957553'
 
   //example: get seed article from specific url
   await page.goto(seedArticle);
@@ -68,6 +68,7 @@ async function searchGoogle(query) {
   const seedTFIDF = calculateTFIDF(normalisedSeedArticle);
 
   const articleURLs = await searchGoogle(seedTitle); //use title of seed article as search query
+  let suggestedArticles = [];
 
   for (let url of articleURLs){
     await page.goto(url);
@@ -79,9 +80,17 @@ async function searchGoogle(query) {
     let articleTFIDFVector = applyTFIDFTransformation(seedTFIDF, normalisedarticle);
     let totalScore = calculateTotalScore(articleTFIDFVector);
     console.log(`Total score for URL ${url}:`, totalScore);
-    sentimentAnalysis(normalisedarticle);
-  }
 
+    if (totalScore > 0){
+      let sentimentResult = sentimentAnalysis(normalisedarticle);
+      suggestedArticles.push({
+        url: url,
+        tfidfScore: totalScore,
+        sentiment: sentimentResult
+      });
+    }
+  }
+  console.log("Suggested Articles:", suggestedArticles);
   await browser.close();
 })();
 
