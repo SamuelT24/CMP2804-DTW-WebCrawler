@@ -55,7 +55,7 @@ async function searchGoogle(query) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  const seedArticle = 'https://www.bbc.co.uk/news/entertainment-arts-68957553'
+  const seedArticle = 'https://www.theguardian.com/politics/2024/apr/29/humza-yousafs-unravelling-tenure-shows-how-short-and-brutish-political-lives-have-become'
 
   //example: get seed article from specific url
   await page.goto(seedArticle);
@@ -66,6 +66,7 @@ async function searchGoogle(query) {
 
   const normalisedSeedArticle = normaliseText(seedText);
   const seedTFIDF = calculateTFIDF(normalisedSeedArticle);
+  const seedArticleSentiment = sentimentAnalysis(normalisedSeedArticle); //calculate sentiment of seed article
 
   const articleURLs = await searchGoogle(seedTitle); //use title of seed article as search query
   let suggestedArticles = [];
@@ -79,14 +80,14 @@ async function searchGoogle(query) {
     let normalisedarticle = normaliseText(articleData);
     let articleTFIDFVector = applyTFIDFTransformation(seedTFIDF, normalisedarticle);
     let totalScore = calculateTotalScore(articleTFIDFVector);
+    let articleSentiment = sentimentAnalysis(normalisedarticle);
     console.log(`Total score for URL ${url}:`, totalScore);
 
-    if (totalScore > 0){
-      let sentimentResult = sentimentAnalysis(normalisedarticle);
+    if (totalScore > 0 && articleSentiment !== seedArticleSentiment){
       suggestedArticles.push({
         url: url,
         tfidfScore: totalScore,
-        sentiment: sentimentResult
+        sentiment: articleSentiment
       });
     }
   }
