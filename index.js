@@ -9,7 +9,12 @@ const GOOGLE_CSE_ID = '86f248a0d941d4c0e'; //custom search engine id here
 function normaliseText(text) {
   text = text.toLowerCase();
   text = text.replace(/[\.?!]/g, "");
-  return text.split(/\s+/);
+  words = text.split(/\s+/);
+
+  //Stemmer to reduce words to their root form NLP
+  const stemmer = natural.PorterStemmer;
+  words = words.map(word => stemmer.stem(word));
+  return words;
 }
 
 // Function to calculate TF-IDF vectors for a single document
@@ -106,18 +111,11 @@ function calculateTotalScore(tfidfVector) {
 //Sentiment analysis NLP
 function sentimentAnalysis(articleData) {
   const Analyser = natural.SentimentAnalyzer;
-  const stemmer = natural.PorterStemmer;
-  const analyser = new Analyser("English", stemmer, "afinn");
+  const analyser = new Analyser("English", null, "afinn");
 
   const result = analyser.getSentiment(articleData);
-  const humanReadableSentiment = interpretSentiment(result);
+  const humanReadableSentiment = result > 0 ? "Positive" : result < 0 ? "Negative" : "Neutral";
   console.log(`Sentiment for article: ${humanReadableSentiment}`);
 }
 
-function interpretSentiment(score) {
-  if (score > 0.5) return "Strongly Positive";
-  if (score > 0) return "Positive";
-  if (score === 0) return "Neutral";
-  if (score > -0.5) return "Negative";
-  return "Strongly Negative";
-}
+
