@@ -86,7 +86,7 @@ async function searchGoogle(query) {
     let articleTFIDFVector = applyTFIDFTransformation(seedTFIDF, normalisedarticle);
     let totalScore = calculateTotalScore(articleTFIDFVector);
     let articleSentiment = sentimentAnalysis(normalisedarticle);
-    console.log(`Total score for URL ${url}:`, totalScore);
+    console.log(`Total score for URL ${url}:`, totalScore, "Sentiment:", articleSentiment);
 
     if (totalScore > 0 && articleSentiment !== seedArticleSentiment){
       suggestedArticles.push({
@@ -115,7 +115,7 @@ function sentimentAnalysis(articleData) {
 
   const result = analyser.getSentiment(articleData);
   const humanReadableSentiment = result > 0 ? "Positive" : result < 0 ? "Negative" : "Neutral";
-  console.log(`Sentiment for article: ${humanReadableSentiment}`);
+  return humanReadableSentiment;
 }
 
 
