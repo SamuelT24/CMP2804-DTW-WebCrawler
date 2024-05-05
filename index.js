@@ -46,6 +46,27 @@ function applyTFIDFTransformation(seedTFIDF, document) {
   return tfidfVector;
 }
 
+//Function to calculate the total tf-idf score 
+function calculateTotalScore(tfidfVector) {
+  let totalScore = 0;
+  for (let word in tfidfVector) {
+      totalScore += tfidfVector[word];
+  }
+  return totalScore;
+}
+
+//Sentiment analysis NLP using natural.js
+function sentimentAnalysis(articleData) {
+  const Analyser = natural.SentimentAnalyzer;
+  const analyser = new Analyser("English", null, "afinn");
+
+  const result = analyser.getSentiment(articleData);
+
+  //Converts sentiment score to string
+  const humanReadableSentiment = result > 0 ? "Positive" : result < 0 ? "Negative" : "Neutral";
+  
+  return humanReadableSentiment;
+}
 
 //dynamically import node-fetch and perform a search
 async function searchGoogle(query) {
@@ -65,11 +86,14 @@ async function searchGoogle(query) {
   //example: get seed article from specific url
   await page.goto(seedArticle);
 
+  //Seed article contents
   const seedTitle = await page.evaluate(() => document.querySelector('h1').innerText);
   const seedText = await page.evaluate(() => document.querySelector('article').innerText);
   
-
+  //Normalise seed article
   const normalisedSeedArticle = normaliseText(seedText);
+
+  //Calculate seed tf and sentiment
   const seedTFIDF = calculateTFIDF(normalisedSeedArticle);
   const seedArticleSentiment = sentimentAnalysis(normalisedSeedArticle); //calculate sentiment of seed article
 
@@ -82,12 +106,18 @@ async function searchGoogle(query) {
       const text = Array.from(document.querySelectorAll('article p')).map(p => p.innerText).join('\n');
       return text;
     });
+
+    //Normalise scraped articles
     let normalisedarticle = normaliseText(articleData);
+
+    //Calculate articles tf-idf and sentiment
     let articleTFIDFVector = applyTFIDFTransformation(seedTFIDF, normalisedarticle);
     let totalScore = calculateTotalScore(articleTFIDFVector);
     let articleSentiment = sentimentAnalysis(normalisedarticle);
+
     console.log(`Total score for URL ${url}:`, totalScore, "Sentiment:", articleSentiment);
 
+    //Add eligible articles to suggested articles array
     if (totalScore > 0 && articleSentiment !== seedArticleSentiment){
       suggestedArticles.push({
         url: url,
@@ -96,26 +126,10 @@ async function searchGoogle(query) {
       });
     }
   }
+  
   console.log("Suggested Articles:", suggestedArticles);
   await browser.close();
 })();
 
-function calculateTotalScore(tfidfVector) {
-  let totalScore = 0;
-  for (let word in tfidfVector) {
-      totalScore += tfidfVector[word];
-  }
-  return totalScore;
-}
-
-//Sentiment analysis NLP
-function sentimentAnalysis(articleData) {
-  const Analyser = natural.SentimentAnalyzer;
-  const analyser = new Analyser("English", null, "afinn");
-
-  const result = analyser.getSentiment(articleData);
-  const humanReadableSentiment = result > 0 ? "Positive" : result < 0 ? "Negative" : "Neutral";
-  return humanReadableSentiment;
-}
 
 
