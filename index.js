@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const natural = require('natural');
+const nlp = require('compromise');
 
 // configuration for google search api
 const GOOGLE_API_KEY = 'AIzaSyAKnD34Y-v2GxVvM3WuR6fE8OPL6kqCuds'; //api key here
@@ -68,6 +69,17 @@ function sentimentAnalysis(articleData) {
   return humanReadableSentiment;
 }
 
+//Function to extract keywords.
+function extractKeywords(text) {
+  const doc = nlp(text);
+  const keywords = doc.nouns().out('array');
+  //remove common stop words.
+  const stopWords = ['a', 'an', 'the', 'and', 'is', 'in', 'it', 'you', 'that', 'of', 'for', 'on', 'are', 'as', 'with', 'his', 'they', 'at', 'be', 'this', 'from', 'or', 'one', 'had', 'by', 'not', 'but', 'what', 'all', 'your', 'when', 'out', 'up', 'no', 'she', 'he', 'which', 'their', 'if', 'there', 'about', 'get', 'will', 'can', 'her', 'all', 'would', 'my', 'like', 'so', 'them', 'other', 'into', 'see', 'time', 'could', 'now', 'than', 'its', 'only', 'think', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us'];
+  const filteredKeywords = keywords.filter(word => !stopWords.includes(word));
+
+  return keywords.join(' ');
+}
+
 //dynamically import node-fetch and perform a search
 async function searchGoogle(query) {
   const { default: fetch } = await import('node-fetch'); //install node-fetch if not already done so
@@ -97,7 +109,9 @@ async function searchGoogle(query) {
   const seedTFIDF = calculateTFIDF(normalisedSeedArticle);
   const seedArticleSentiment = sentimentAnalysis(normalisedSeedArticle); //calculate sentiment of seed article
 
-  const articleURLs = await searchGoogle(seedTitle); //use title of seed article as search query
+  const extractedTitle = extractKeywords(seedTitle);
+  console.log (extractedTitle);
+  const articleURLs = await searchGoogle(extractedTitle); //use title of seed article as search query
   let suggestedArticles = [];
 
   for (let url of articleURLs){
