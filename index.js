@@ -77,7 +77,7 @@ function extractKeywords(text) {
   const stopWords = ['a', 'an', 'the', 'and', 'is', 'in', 'it', 'you', 'that', 'of', 'for', 'on', 'are', 'as', 'with', 'his', 'they', 'at', 'be', 'this', 'from', 'or', 'one', 'had', 'by', 'not', 'but', 'what', 'all', 'your', 'when', 'out', 'up', 'no', 'she', 'he', 'which', 'their', 'if', 'there', 'about', 'get', 'will', 'can', 'her', 'all', 'would', 'my', 'like', 'so', 'them', 'other', 'into', 'see', 'time', 'could', 'now', 'than', 'its', 'only', 'think', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us'];
   const filteredKeywords = keywords.filter(word => !stopWords.includes(word));
 
-  return keywords.join(' ');
+  return filteredKeywords.join(' ');
 }
 
 //dynamically import node-fetch and perform a search
@@ -111,7 +111,10 @@ async function searchGoogle(query) {
 
   const extractedTitle = extractKeywords(seedTitle);
   console.log (extractedTitle);
-  const articleURLs = await searchGoogle(extractedTitle); //use title of seed article as search query
+
+  const searchQuery = `${extractedTitle} site:news.google.com`
+
+  const articleURLs = await searchGoogle(searchQuery); //use title of seed article as search query
   let suggestedArticles = [];
 
   for (let url of articleURLs){
