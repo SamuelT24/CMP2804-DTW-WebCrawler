@@ -112,9 +112,9 @@ async function searchGoogle(query) {
   const extractedTitle = extractKeywords(seedTitle);
   console.log (extractedTitle);
 
-  const searchQuery = `${extractedTitle} site:news.google.com`
-
-  const articleURLs = await searchGoogle(searchQuery); //use title of seed article as search query
+  //const searchQuery = `${extractedTitle} site:news.google.com`
+  //console.log(searchQuery);
+  const articleURLs = await searchGoogle(extractedTitle + 'news article'); //use title of seed article as search query
   let suggestedArticles = [];
 
   for (let url of articleURLs){
