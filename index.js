@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const natural = require('natural');
 
 // configuration for google search api
-const GOOGLE_API_KEY = 'AIzaSyAKnD34Y-v2GxVvM3WuR6fE8OPL6kqCuds'; //api key here
+const GOOGLE_API_KEY = 'AIzaSyBgwzoNbaAePUngsVKmoDhYeqhqgNtpnOA'; //api key here
 const GOOGLE_CSE_ID = '86f248a0d941d4c0e'; //custom search engine id here
 
 // Function to normalise text
