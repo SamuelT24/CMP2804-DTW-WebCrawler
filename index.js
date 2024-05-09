@@ -95,13 +95,20 @@ async function searchGoogle(query) {
 
   const seedArticle = 'https://www.theguardian.com/politics/2024/apr/29/humza-yousafs-unravelling-tenure-shows-how-short-and-brutish-political-lives-have-become'
 
-  //example: get seed article from specific url
-  await page.goto(seedArticle);
+  let seedTitle, seedText
 
-  //Seed article contents
-  const seedTitle = await page.evaluate(() => document.querySelector('h1').innerText);
-  const seedText = await page.evaluate(() => document.querySelector('article').innerText);
-  
+  //example: get seed article from specific url
+  try {
+    await page.goto(seedArticle);
+
+    //Seed article contents
+    seedTitle = await page.evaluate(() => document.querySelector('h1').innerText);
+    seedText = await page.evaluate(() => document.querySelector('article').innerText);
+  } 
+  catch (error) {
+    console.error(`Failed to navigate to ${seedArticle}}`);
+    process.exit();
+  }
   //Normalise seed article
   const normalisedSeedArticle = normaliseText(seedText);
 
@@ -110,19 +117,28 @@ async function searchGoogle(query) {
   const seedArticleSentiment = sentimentAnalysis(normalisedSeedArticle); //calculate sentiment of seed article
 
   const extractedTitle = extractKeywords(seedTitle);
-  console.log (extractedTitle);
+  console.log(extractedTitle);
 
   //const searchQuery = `${extractedTitle} site:news.google.com`
   //console.log(searchQuery);
   const articleURLs = await searchGoogle(extractedTitle + 'news article'); //use title of seed article as search query
   let suggestedArticles = [];
 
+  let articleData;
+
   for (let url of articleURLs){
-    await page.goto(url);
-    const articleData = await page.evaluate(() => {
-      const text = Array.from(document.querySelectorAll('article p')).map(p => p.innerText).join('\n');
-      return text;
-    });
+    try {
+      await page.goto(url);
+      articleData = await page.evaluate(() => {
+        const text = Array.from(document.querySelectorAll('article p')).map(p => p.innerText).join('\n');
+        return text;
+      })
+    }
+    catch (error) {
+      console.error(`Failed to navigate to ${url}`);
+      continue;
+    }
+
 
     //Normalise scraped articles
     let normalisedarticle = normaliseText(articleData);
@@ -142,7 +158,7 @@ async function searchGoogle(query) {
         sentiment: articleSentiment
       });
     }
-  }
+  };
   
   console.log("Suggested Articles:", suggestedArticles);
   await browser.close();
